@@ -1,13 +1,14 @@
 [package]
-name = "sudo"
+name = "sudo2"
 summary = "Speak to the manager! Restart your current process with elevated privileges if needed."
 description = "Detect if you are running as root, restart self with sudo or any other wrapper if needed or setup uid zero when running with the SUID flag set."
 
-version = "0.1.2"
+version = "0.2.0"
 authors = [
-    "Stefan Schindler <dns2utf8@estada.ch>",
-    "Alexandria P",
-    "Cappy Ishihara <cappy@fyralabs.com>",
+  "Stefan Schindler <dns2utf8@estada.ch>",
+  "Alexandria P",
+  "Cappy Ishihara <cappy@fyralabs.com>",
+  "Dilawar Singh <dilawar.s.rajput@gmail.com>",
 ]
 license = "MIT OR Apache-2.0"
 edition = "2021"
@@ -15,14 +16,16 @@ edition = "2021"
 keywords = ["suid", "sudo", "pkexec", "polkit", "doas"]
 
 
-repository = "https://github.com/FyraLabs/sudo"
+repository = "https://github.com/dilawar/sudo2"
 readme = "README.md"
 include = ["README.md", "LICENSE", "src/**"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-log = "~0.4"
 libc = "~0.2"
+tracing = "0.1.40"
+wildmatch = "2.3.4"
 
 [dev-dependencies]
 simple_logger = ">=4"
+tracing-test = "0.2.5"

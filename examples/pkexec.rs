@@ -1,4 +1,4 @@
-use log::info;
+use tracing::info;
 
 fn main() {
     simple_logger::SimpleLogger::new()
@@ -9,7 +9,7 @@ fn main() {
 
     spawn("/usr/bin/id");
 
-    sudo::pkexec().expect("pkexec failed");
+    sudo2::pkexec().expect("pkexec failed");
 
     uid_euid("②");
 

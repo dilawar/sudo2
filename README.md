@@ -1,4 +1,17 @@
-# sudo
+# sudo2
+
+## Changelogs
+
+Following changes were made to the crate `karen` which is a fork of `sudo` and
+`elevate`.
+
+- Adds support for wildcard. It is possible to select all environment variables
+  with using `sudo2::with_env_wildcards(&["*"])` (mimics `sudo -E`).
+- Adds a few internal functions. `sudo2::running_as_root` return `true` if
+  process already running as `root`.
+- Adds `rustfmt.toml`
+
+---
 
 > Escalate to your manager and get root access!
 
@@ -38,7 +51,7 @@ In your `main.rs`:
 
 ```rust
 fn main() -> Result<(), Box<dyn Error>> {
-    sudo::escalate_if_needed()?;
+    sudo2::escalate_if_needed()?;
     println!("Hello, Root-World!");
     Ok( () )
 }
@@ -73,7 +86,7 @@ This enables more configuration options often used in daemons or cloud environme
 
 ```rust
     // keeping all environment variables starting with "EXAMPLE_" or "CARGO"
-    sudo::with_env(&["EXAMPLE_", "CARGO"]).expect("sudo failed");
+    sudo2::with_env(&["EXAMPLE_", "CARGO"]).expect("sudo failed");
 ```
 
 **Warning:** This may introduce security problems to your application if untrusted users are able to set these variables.

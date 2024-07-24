@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0 - [2024-07-24]
+
+- Adds support for wildcard. It is possible to select all environment variables
+  with using `sudo2::with_env_wildcards(&["*"])` (mimics `sudo -E`).
+- Adds a few internal functions. `sudo2::running_as_root` return `true` if
+  process already running as `root`.
+- Adds `rustfmt.toml`
+
 ## 0.1.0 - sudo release
 
 - Rename the crate to `sudo`

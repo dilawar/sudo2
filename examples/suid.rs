@@ -1,7 +1,3 @@
-#[macro_use]
-extern crate log;
-extern crate simple_logger;
-
 fn main() {
     simple_logger::SimpleLogger::new()
         .init()
@@ -11,7 +7,7 @@ fn main() {
 
     spawn("/usr/bin/id");
 
-    sudo::escalate_if_needed().expect("sudo failed");
+    sudo2::escalate_if_needed().expect("sudo failed");
 
     uid_euid("②");
 
@@ -21,7 +17,7 @@ fn main() {
 fn uid_euid(nth: &str) {
     let euid = unsafe { libc::geteuid() };
     let uid = unsafe { libc::getuid() };
-    info!("{} uid: {}; euid: {};", nth, uid, euid);
+    tracing::info!("{} uid: {}; euid: {};", nth, uid, euid);
 }
 
 fn spawn(cmd: &str) {
