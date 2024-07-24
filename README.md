@@ -1,4 +1,4 @@
-# karen
+# sudo
 
 > Escalate to your manager and get root access!
 
@@ -13,8 +13,8 @@ The API is a superset of the original `sudo` crate, so you can use it as a drop-
 
 The original `sudo` crate can be found on [GitLab](https://gitlab.com/dns2utf8/sudo.rs) ([crates.io](https://crates.io/crates/sudo)).
 
-[![crates.io](https://img.shields.io/crates/v/karen?logo=rust)](https://crates.io/crates/karen/)
-[![docs.rs](https://docs.rs/karen/badge.svg)](https://docs.rs/karen)
+[![crates.io](https://img.shields.io/crates/v/sudo?logo=rust)](https://crates.io/crates/karen/)
+[![docs.rs](https://docs.rs/sudo/badge.svg)](https://docs.rs/karen)
 
 Detect if you are running as root, restart self with `sudo` if needed or setup uid zero when running with the SUID flag set.
 
@@ -27,18 +27,18 @@ Detect if you are running as root, restart self with `sudo` if needed or setup u
 
 ## Example:
 
-First, add karen to your `Cargo.toml`:
+First, add sudo to your `Cargo.toml`:
 
 ```yaml
 [dependencies]
-karen = "0.6.1"
+sudo = "0.6.1"
 ```
 
 In your `main.rs`:
 
 ```rust
 fn main() -> Result<(), Box<dyn Error>> {
-    karen::escalate_if_needed()?;
+    sudo::escalate_if_needed()?;
     println!("Hello, Root-World!");
     Ok( () )
 }
@@ -56,12 +56,12 @@ The crate will automatically keep the setting of `RUST_BACKTRACE` intact if it i
 
 ```bash
 $ RUST_BACKTRACE=full cargo run --example backtrace
-2020-07-05 18:10:31,544 TRACE [karen] Running as User
-2020-07-05 18:10:31,544 DEBUG [karen] Escalating privileges
-2020-07-05 18:10:31,544 TRACE [karen] relaying RUST_BACKTRACE=full
-[karen] Passwort für user:
-2020-07-05 18:10:39,238 TRACE [karen] Running as Root
-2020-07-05 18:10:39,238 TRACE [karen] already running as Root
+2020-07-05 18:10:31,544 TRACE [sudo] Running as User
+2020-07-05 18:10:31,544 DEBUG [sudo] Escalating privileges
+2020-07-05 18:10:31,544 TRACE [sudo] relaying RUST_BACKTRACE=full
+[sudo] Passwort für user:
+2020-07-05 18:10:39,238 TRACE [sudo] Running as Root
+2020-07-05 18:10:39,238 TRACE [sudo] already running as Root
 2020-07-05 18:10:39,238 INFO  [backtrace] entering failing_function
 thread 'main' panicked at 'now you see me fail', examples/backtrace.rs:16:5
 ```
@@ -73,7 +73,7 @@ This enables more configuration options often used in daemons or cloud environme
 
 ```rust
     // keeping all environment variables starting with "EXAMPLE_" or "CARGO"
-    karen::with_env(&["EXAMPLE_", "CARGO"]).expect("sudo failed");
+    sudo::with_env(&["EXAMPLE_", "CARGO"]).expect("sudo failed");
 ```
 
 **Warning:** This may introduce security problems to your application if untrusted users are able to set these variables.
@@ -88,10 +88,10 @@ declare -x EXAMPLE_BTICKS="\`ls\`"
 declare -x EXAMPLE_EXEC="\$(ls)"
 ...
 
-[karen] password for user:
+[sudo] password for user:
 
-2020-07-07 16:32:11,285 TRACE [karen] Running as Root
-2020-07-07 16:32:11,285 TRACE [karen] already running as Root
+2020-07-07 16:32:11,285 TRACE [sudo] Running as Root
+2020-07-07 16:32:11,285 TRACE [sudo] already running as Root
 2020-07-07 16:32:11,285 INFO  [environment] ② uid: 0; euid: 0;
 
 ...
@@ -106,13 +106,13 @@ declare -x EXAMPLE_EXEC="\$(ls)"
 $ cargo run --example suid
 2020-04-17 15:13:49,450 INFO  [suid] ① uid: 1000; euid: 1000;
 uid=1000(user) gid=1000(user) groups=1000(user),4(adm),27(sudo)
-2020-04-17 15:13:49,453 TRACE [karen] Running as User
-2020-04-17 15:13:49,453 DEBUG [karen] Escalating privileges
-[karen] password for user:
+2020-04-17 15:13:49,453 TRACE [sudo] Running as User
+2020-04-17 15:13:49,453 DEBUG [sudo] Escalating privileges
+[sudo] password for user:
 2020-04-17 15:13:53,529 INFO  [suid] ① uid: 0; euid: 0;
 uid=0(root) gid=0(root) groups=0(root)
-2020-04-17 15:13:53,532 TRACE [karen] Running as Root
-2020-04-17 15:13:53,532 TRACE [karen] already running as Root
+2020-04-17 15:13:53,532 TRACE [sudo] Running as Root
+2020-04-17 15:13:53,532 TRACE [sudo] already running as Root
 2020-04-17 15:13:53,532 INFO  [suid] ② uid: 0; euid: 0;
 uid=0(root) gid=0(root) groups=0(root)
 
@@ -131,8 +131,8 @@ Now run the program again:
 $ target/debug/examples/suid
 2020-04-17 15:14:37,199 INFO  [suid] ① uid: 1000; euid: 0;
 uid=1000(user) gid=1000(user) euid=0(root) groups=1000(user),4(adm),27(sudo)
-2020-04-17 15:14:37,202 TRACE [karen] Running as Suid
-2020-04-17 15:14:37,202 TRACE [karen] setuid(0)
+2020-04-17 15:14:37,202 TRACE [sudo] Running as Suid
+2020-04-17 15:14:37,202 TRACE [sudo] setuid(0)
 2020-04-17 15:14:37,202 INFO  [suid] ② uid: 0; euid: 0;
 uid=0(root) gid=1000(user) groups=1000(user),4(adm),27(sudo)
 ```

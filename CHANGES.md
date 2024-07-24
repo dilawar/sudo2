@@ -1,8 +1,8 @@
 # Changelog
 
-## 0.1.0 - karen release
+## 0.1.0 - sudo release
 
-- Rename the crate to `karen`
+- Rename the crate to `sudo`
 - Add `polkit` and `doas` functions
 - Major code refactor, everything is now in the `Elevate` builder struct
 - Add ability to specify a custom wrapper other than `sudo`

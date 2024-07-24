@@ -1,4 +1,4 @@
-//! [![crates.io](https://img.shields.io/crates/v/karen?logo=rust)](https://crates.io/crates/karen/)
+//! [![crates.io](https://img.shields.io/crates/v/sudo?logo=rust)](https://crates.io/crates/karen/)
 //! [![docs.rs](https://docs.rs/sudo/badge.svg)](https://docs.rs/sudo)
 //!
 //! Detect if you are running as root, restart self with `sudo` if needed or setup uid zero when running with the SUID flag set.
@@ -23,7 +23,7 @@ pub enum RunningAs {
     Root,
     /// Running as a normal user
     User,
-    /// Started from SUID, a call to `karen::escalate_if_needed` or `karen::with_env` is required to claim the root privileges at runtime.
+    /// Started from SUID, a call to `sudo::escalate_if_needed` or `karen::with_env` is required to claim the root privileges at runtime.
     /// This does not restart the process.
     Suid,
 }
@@ -155,7 +155,7 @@ impl Escalate {
 }
 
 #[cfg(unix)]
-/// Alias for Escalate::builder() to quickly create a new karen Escalate builder
+/// Alias for Escalate::builder() to quickly create a new sudo Escalate builder
 pub fn builder() -> Escalate {
     Escalate::builder()
 }
@@ -168,8 +168,8 @@ pub fn builder() -> Escalate {
 /// ```
 /// # use std::error::Error;
 /// # fn main() -> Result<(), Box<dyn Error>> {
-/// #   if karen::check() == karen::RunningAs::Root {
-/// karen::escalate_if_needed()?;
+/// #   if sudo::check() == karen::RunningAs::Root {
+/// sudo::escalate_if_needed()?;
 /// // the following gets only executed in privileged mode
 /// #   } else {
 /// #     eprintln!("not actually testing");
@@ -188,8 +188,8 @@ pub fn escalate_if_needed() -> Result<RunningAs, Box<dyn Error>> {
 /// ```
 /// # use std::error::Error;
 /// # fn main() -> Result<(), Box<dyn Error>> {
-/// #   if karen::check() == karen::RunningAs::Root {
-/// karen::pkexec()?;
+/// #   if sudo::check() == karen::RunningAs::Root {
+/// sudo::pkexec()?;
 /// // the following gets only executed in privileged mode
 /// #   } else {
 /// #     eprintln!("not actually testing");
@@ -208,8 +208,8 @@ pub fn pkexec() -> Result<RunningAs, Box<dyn Error>> {
 /// ```
 /// # use std::error::Error;
 /// # fn main() -> Result<(), Box<dyn Error>> {
-/// #   if karen::check() == karen::RunningAs::Root {
-/// karen::doas()?;
+/// #   if sudo::check() == karen::RunningAs::Root {
+/// sudo::doas()?;
 /// // the following gets only executed in privileged mode
 /// #   } else {
 /// #     eprintln!("not actually testing");
@@ -230,8 +230,8 @@ pub fn doas() -> Result<RunningAs, Box<dyn Error>> {
 /// ```
 /// # use std::error::Error;
 /// # fn main() -> Result<(), Box<dyn Error>> {
-/// #   if karen::check() == karen::RunningAs::Root {
-/// karen::with_env(&["CARGO_", "MY_APP_"])?;
+/// #   if sudo::check() == karen::RunningAs::Root {
+/// sudo::with_env(&["CARGO_", "MY_APP_"])?;
 /// // the following gets only executed in privileged mode
 /// #   } else {
 /// #     eprintln!("not actually testing");

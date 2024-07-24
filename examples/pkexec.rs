@@ -9,7 +9,7 @@ fn main() {
 
     spawn("/usr/bin/id");
 
-    karen::pkexec().expect("pkexec failed");
+    sudo::pkexec().expect("pkexec failed");
 
     uid_euid("②");
 

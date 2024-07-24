@@ -1,5 +1,5 @@
 [package]
-name = "karen"
+name = "sudo"
 summary = "Speak to the manager! Restart your current process with elevated privileges if needed."
 description = "Detect if you are running as root, restart self with sudo or any other wrapper if needed or setup uid zero when running with the SUID flag set."
 
@@ -15,7 +15,7 @@ edition = "2021"
 keywords = ["suid", "sudo", "pkexec", "polkit", "doas"]
 
 
-repository = "https://github.com/FyraLabs/karen"
+repository = "https://github.com/FyraLabs/sudo"
 readme = "README.md"
 include = ["README.md", "LICENSE", "src/**"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

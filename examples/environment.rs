@@ -13,7 +13,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     spawn("export");
 
-    karen::with_env(&["EXAMPLE_", "CARGO"])?;
+    sudo::with_env(&["EXAMPLE_", "CARGO"])?;
 
     uid_euid("②");
 
