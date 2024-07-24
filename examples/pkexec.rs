@@ -1,6 +1,7 @@
-use tracing::info;
-
+#[cfg(unix)]
 fn main() {
+    use tracing::info;
+
     simple_logger::SimpleLogger::new()
         .init()
         .expect("unable to initialize logger");
@@ -16,16 +17,24 @@ fn main() {
     spawn("/usr/bin/id");
 }
 
+#[cfg(unix)]
 fn uid_euid(nth: &str) {
     let euid = unsafe { libc::geteuid() };
     let uid = unsafe { libc::getuid() };
     info!("{} uid: {}; euid: {};", nth, uid, euid);
 }
 
+#[cfg(unix)]
 fn spawn(cmd: &str) {
     let mut child = std::process::Command::new(cmd)
         .spawn()
         .expect("unable to start child");
 
     let _ecode = child.wait().expect("failed to wait on child");
+}
+
+
+#[cfg(not(unix))]
+fn main() {
+    panic!("only unix is supported");
 }

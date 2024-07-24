@@ -1,6 +1,5 @@
 [package]
 name = "sudo2"
-summary = "Speak to the manager! Restart your current process with elevated privileges if needed."
 description = "Detect if you are running as root, restart self with sudo or any other wrapper if needed or setup uid zero when running with the SUID flag set."
 
 version = "0.2.0"

@@ -12,6 +12,7 @@
 //!     * It should work on *BSD. However, you can also create an Escalate
 //!       builder with `doas` as the wrapper should you prefer that.
 #![allow(clippy::bool_comparison)]
+#![cfg(unix)]
 
 use std::error::Error;
 use std::process::Command;
@@ -30,7 +31,6 @@ pub enum RunningAs {
 }
 use RunningAs::*;
 
-#[cfg(unix)]
 /// Check getuid() and geteuid() to learn about the configuration this program
 /// is running under
 fn check() -> RunningAs {
@@ -45,7 +45,6 @@ fn check() -> RunningAs {
     //if uid == 0 { Root } else { User }
 }
 
-#[cfg(unix)]
 /// Returns `true` if binary is already running as root.
 pub fn running_as_root() -> bool {
     check() == RunningAs::Root
@@ -192,13 +191,11 @@ impl Escalate {
     }
 }
 
-#[cfg(unix)]
 /// Alias for Escalate::builder() to quickly create a new sudo Escalate builder
 pub fn builder() -> Escalate {
     Escalate::builder()
 }
 
-#[cfg(unix)]
 /// Restart your program with sudo if the user is not privileged enough.
 ///
 /// Activates SUID privileges when available
@@ -220,7 +217,6 @@ pub fn escalate_if_needed() -> Result<RunningAs, Box<dyn Error>> {
     with_env(&[])
 }
 
-#[cfg(unix)]
 /// Similar to escalate_if_needed, but with pkexec as the wrapper
 ///
 /// ```
@@ -240,7 +236,6 @@ pub fn pkexec() -> Result<RunningAs, Box<dyn Error>> {
     builder().wrapper("pkexec").escalate_if_needed()
 }
 
-#[cfg(unix)]
 /// Similar to escalate_if_needed, but with doas as the wrapper
 ///
 /// ```
@@ -260,7 +255,6 @@ pub fn doas() -> Result<RunningAs, Box<dyn Error>> {
     builder().wrapper("doas").escalate_if_needed()
 }
 
-#[cfg(unix)]
 /// Escalate privileges while maintaining RUST_BACKTRACE and selected
 /// environment variables (or none).
 ///
@@ -282,7 +276,6 @@ pub fn with_env(prefixes: &[&str]) -> Result<RunningAs, Box<dyn Error>> {
     Escalate::default().with_env(prefixes)
 }
 
-#[cfg(unix)]
 /// Escalate privileges while maintaining RUST_BACKTRACE and selected
 /// environment variables that matches given wildcard (or none).
 ///

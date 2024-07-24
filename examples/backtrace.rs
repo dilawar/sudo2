@@ -1,3 +1,4 @@
+#[cfg(unix)]
 fn main() {
     simple_logger::SimpleLogger::new()
         .init()
@@ -8,8 +9,14 @@ fn main() {
     failing_function();
 }
 
+#[cfg(unix)]
 #[inline(never)]
 fn failing_function() -> ! {
     tracing::info!("entering failing_function");
     panic!("now you see me fail")
+}
+
+#[cfg(not(unix))]
+fn main() {
+    panic!("only unix is supported");
 }
