@@ -1,7 +1,8 @@
+#[cfg(unix)]
+use std::error::Error;
 
 #[cfg(unix)]
 fn main() -> Result<(), Box<dyn Error>> {
-    use std::error::Error;
 
     simple_logger::SimpleLogger::new()
         .init()

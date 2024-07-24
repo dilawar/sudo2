@@ -1,7 +1,5 @@
 #[cfg(unix)]
 fn main() {
-    use tracing::info;
-
     simple_logger::SimpleLogger::new()
         .init()
         .expect("unable to initialize logger");
@@ -21,7 +19,7 @@ fn main() {
 fn uid_euid(nth: &str) {
     let euid = unsafe { libc::geteuid() };
     let uid = unsafe { libc::getuid() };
-    info!("{} uid: {}; euid: {};", nth, uid, euid);
+    tracing::info!("{} uid: {}; euid: {};", nth, uid, euid);
 }
 
 #[cfg(unix)]
