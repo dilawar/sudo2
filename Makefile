@@ -15,5 +15,8 @@ fix:
 fmt:
 	cargo +nightly fmt
 
+pretty:
+	prettier . --write
+
 
 .PHONY: ci build test check lint fix fmt
