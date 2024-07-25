@@ -1,15 +1,14 @@
 # sudo2
 
-## Changelogs
+__Major changes__
 
-Following changes were made to the crate `karen` which is a fork of `sudo` and
-`elevate`.
+Following major changes were made to the crate `karen` which is a fork of `sudo` and `elevate`.
 
-- Adds support for wildcard. It is possible to select all environment variables
-  with using `sudo2::with_env_wildcards(&["*"])` (mimics `sudo -E`).
+- Adds wildcard support. It is possible to select all environment variables
+  with using `sudo2::with_env_wildcards(&["*"])` or `sudo2::escalate_with_env` mimics `sudo -E`
+  behaviour. 
 - Adds a few internal functions. `sudo2::running_as_root` return `true` if
   process already running as `root`.
-- Adds `rustfmt.toml`
 
 ---
 
