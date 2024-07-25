@@ -1,12 +1,16 @@
+[![crates.io](https://img.shields.io/crates/v/sudo2?logo=rust)](https://crates.io/crates/sudo2/)
+[![docs.rs](https://docs.rs/sudo2/badge.svg)](https://docs.rs/sudo2)
+
 # sudo2
 
-__Major changes__
+**Major changes**
 
-Following major changes were made to the crate `karen` which is a fork of `sudo` and `elevate`.
+Following major changes were made to the crate `karen` which is a fork of `sudo`
+and `elevate`.
 
-- Adds wildcard support. It is possible to select all environment variables
-  with using `sudo2::with_env_wildcards(&["*"])` or `sudo2::escalate_with_env` mimics `sudo -E`
-  behaviour. 
+- Adds wildcard support. It is possible to select all environment variables with
+  using `sudo2::with_env_wildcards(&["*"])` or `sudo2::escalate_with_env` mimics
+  `sudo -E` behaviour.
 - Adds a few internal functions. `sudo2::running_as_root` return `true` if
   process already running as `root`.
 
@@ -14,28 +18,34 @@ Following major changes were made to the crate `karen` which is a fork of `sudo`
 
 > Escalate to your manager and get root access!
 
-This is an extended fork of the `sudo` and `elevate` crates, which is a simple library to restart your process with sudo to escalate privileges.
+This is an extended fork of the `sudo` and `elevate` crates, which is a simple
+library to restart your process with sudo to escalate privileges.
 
 This fork is a refactor of the original version, with the following changes:
 
 - A builder pattern for the `Elevate` struct
-- An ability to use `pkexec` or `polkit` as an alternative to `sudo` by setting the wrapper from the builder
+- An ability to use `pkexec` or `polkit` as an alternative to `sudo` by setting
+  the wrapper from the builder
 
-The API is a superset of the original `sudo` crate, so you can use it as a drop-in replacement, but you can also use the new builder pattern to set your own options (currently only wrapper is supported)
+The API is a superset of the original `sudo` crate, so you can use it as a
+drop-in replacement, but you can also use the new builder pattern to set your
+own options (currently only wrapper is supported)
 
-The original `sudo` crate can be found on [GitLab](https://gitlab.com/dns2utf8/sudo.rs) ([crates.io](https://crates.io/crates/sudo)).
+The original `sudo` crate can be found on
+[GitLab](https://gitlab.com/dns2utf8/sudo.rs)
+([crates.io](https://crates.io/crates/sudo)).
 
-[![crates.io](https://img.shields.io/crates/v/sudo?logo=rust)](https://crates.io/crates/karen/)
-[![docs.rs](https://docs.rs/sudo/badge.svg)](https://docs.rs/karen)
-
-Detect if you are running as root, restart self with `sudo` if needed or setup uid zero when running with the SUID flag set.
+Detect if you are running as root, restart self with `sudo` if needed or setup
+uid zero when running with the SUID flag set.
 
 ## Requirements
 
 - Unix-like operating system
-- The intended wrapper (sudo, pkexec, polkit) must be installed and in the PATH. The default is `sudo`.
+- The intended wrapper (sudo, pkexec, polkit) must be installed and in the PATH.
+  The default is `sudo`.
 - Linux or Mac OS X tested
-  - It should work on \*BSD. You may want to use `doas` instead of `sudo` on OpenBSD using the new builder pattern.
+  - It should work on \*BSD. You may want to use `doas` instead of `sudo` on
+    OpenBSD using the new builder pattern.
 
 ## Example:
 
@@ -56,11 +66,14 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 ```
 
-If you are using logging based on the [log infrastructure](https://crates.io/crates/log) you will get timestamped and formatted output.
+If you are using logging based on the
+[log infrastructure](https://crates.io/crates/log) you will get timestamped and
+formatted output.
 
 ## Passing RUST_BACKTRACE
 
-The crate will automatically keep the setting of `RUST_BACKTRACE` intact if it is set to one of the following values:
+The crate will automatically keep the setting of `RUST_BACKTRACE` intact if it
+is set to one of the following values:
 
 - `` <- empty string means no pass-through
 - `1` or `true` <- standard trace
@@ -80,15 +93,16 @@ thread 'main' panicked at 'now you see me fail', examples/backtrace.rs:16:5
 
 ## Keeping part of the environment
 
-You can keep parts of your environment across the sudo barrier.
-This enables more configuration options often used in daemons or cloud environments:
+You can keep parts of your environment across the sudo barrier. This enables
+more configuration options often used in daemons or cloud environments:
 
 ```rust
     // keeping all environment variables starting with "EXAMPLE_" or "CARGO"
     sudo2::with_env(&["EXAMPLE_", "CARGO"]).expect("sudo failed");
 ```
 
-**Warning:** This may introduce security problems to your application if untrusted users are able to set these variables.
+**Warning:** This may introduce security problems to your application if
+untrusted users are able to set these variables.
 
 ```bash
 $ EXAMPLE_EXEC='$(ls)' EXAMPLE_BTICKS='`ls`' cargo run --example environment
