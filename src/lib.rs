@@ -205,7 +205,7 @@ pub fn builder() -> Escalate {
 /// # fn main() -> Result<(), Box<dyn Error>> {
 /// #   if sudo2::running_as_root() {
 /// sudo2::escalate_if_needed()?;
-/// // the following gets only executed in privileged mode
+/// # // the following gets only executed in privileged mode
 /// #   } else {
 /// #     eprintln!("not actually testing");
 /// #   }
@@ -217,6 +217,28 @@ pub fn escalate_if_needed() -> Result<RunningAs, Box<dyn Error>> {
     with_env(&[])
 }
 
+/// Restart your program with sudo and if the user is not privileged enough.
+/// Inherit all environment variables.
+///
+/// Activates SUID privileges when available
+///
+/// ```
+/// # use std::error::Error;
+/// # fn main() -> Result<(), Box<dyn Error>> {
+/// #   if sudo2::running_as_root() {
+/// sudo2::escalate_with_env()?;
+/// # // the following gets only executed in privileged mode
+/// #   } else {
+/// #     eprintln!("not actually testing");
+/// #   }
+/// #   Ok(())
+/// # }
+/// ```
+#[inline]
+pub fn escalate_with_env() -> Result<RunningAs, Box<dyn Error>> {
+    with_env_wildcards(&["*"])
+}
+
 /// Similar to escalate_if_needed, but with pkexec as the wrapper
 ///
 /// ```
@@ -224,7 +246,7 @@ pub fn escalate_if_needed() -> Result<RunningAs, Box<dyn Error>> {
 /// # fn main() -> Result<(), Box<dyn Error>> {
 /// #   if sudo2::running_as_root() {
 /// sudo2::pkexec()?;
-/// // the following gets only executed in privileged mode
+/// # // the following gets only executed in privileged mode
 /// #   } else {
 /// #     eprintln!("not actually testing");
 /// #   }
@@ -243,7 +265,7 @@ pub fn pkexec() -> Result<RunningAs, Box<dyn Error>> {
 /// # fn main() -> Result<(), Box<dyn Error>> {
 /// #   if sudo2::running_as_root() {
 /// sudo2::doas()?;
-/// // the following gets only executed in privileged mode
+/// # // the following gets only executed in privileged mode
 /// #   } else {
 /// #     eprintln!("not actually testing");
 /// #   }
@@ -265,7 +287,7 @@ pub fn doas() -> Result<RunningAs, Box<dyn Error>> {
 /// # fn main() -> Result<(), Box<dyn Error>> {
 /// #   if sudo2::running_as_root() {
 /// sudo2::with_env(&["CARGO_", "MY_APP_"])?;
-/// // the following gets only executed in privileged mode
+/// # // the following gets only executed in privileged mode
 /// #   } else {
 /// #     eprintln!("not actually testing");
 /// #   }
@@ -289,7 +311,7 @@ pub fn with_env(prefixes: &[&str]) -> Result<RunningAs, Box<dyn Error>> {
 /// # fn main() -> Result<(), Box<dyn Error>> {
 /// #   if sudo2::running_as_root() {
 /// sudo2::with_env_wildcards(&["CARGO_*", "MY_APP_*"])?;
-/// // the following gets only executed in privileged mode
+/// # // the following gets only executed in privileged mode
 /// #   } else {
 /// #     eprintln!("not actually testing");
 /// #   }
