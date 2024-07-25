@@ -16,7 +16,7 @@ fmt:
 	cargo +nightly fmt
 
 pretty:
-	prettier . --write
+	prettier . --write --print-width 80 --prose-wrap always
 
 
 .PHONY: ci build test check lint fix fmt
