@@ -31,7 +31,6 @@ fn spawn(cmd: &str) {
     let _ecode = child.wait().expect("failed to wait on child");
 }
 
-
 #[cfg(not(unix))]
 fn main() {
     panic!("only unix is supported");
