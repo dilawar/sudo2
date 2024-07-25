@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1 - [2024-07-25]
+
+- Adds function `escalate_with_env` that mimics `sudo -E`
+
 ## 0.2.0 - [2024-07-24]
 
 - Adds support for wildcard. It is possible to select all environment variables

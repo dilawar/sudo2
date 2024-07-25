@@ -2,11 +2,11 @@ name: Rust
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
     tags:
-      - 'v*'
+      - "v*"
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
   CARGO_TERM_COLOR: always
@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }} 
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - name: Lint

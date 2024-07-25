@@ -2,7 +2,7 @@
 name = "sudo2"
 description = "Detect if you are running as root, restart self with sudo or any other wrapper if needed or setup uid zero when running with the SUID flag set."
 
-version = "0.2.0"
+version = "0.2.1"
 authors = [
   "Stefan Schindler <dns2utf8@estada.ch>",
   "Alexandria P",

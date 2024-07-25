@@ -3,7 +3,6 @@ use std::error::Error;
 
 #[cfg(unix)]
 fn main() -> Result<(), Box<dyn Error>> {
-
     simple_logger::SimpleLogger::new()
         .init()
         .expect("unable to initialize logger");
@@ -20,7 +19,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
-
 
 #[cfg(unix)]
 fn uid_euid(nth: &str) {
