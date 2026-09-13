@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2 - [2026-09-13]
+
+- Upgrade deps
+
 ## 0.2.1 - [2024-07-25]
 
 - Adds function `escalate_with_env` that mimics `sudo -E`
