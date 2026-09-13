@@ -3,12 +3,7 @@
 ## 0.3.0 - [2026-09-13]
 
 - Fix environment variables not reaching the escalated process when using
-  the `sudo` or `doas` wrapper (#3). `sudo`/`doas` reset the environment for
-  their target by default, so vars set via `with_env`/`with_env_wildcards`
-  were silently dropped even though they were logged as "propagating".
-  Requested variables are now passed as explicit `NAME=value` arguments to
-  `env`, the same technique already used for `pkexec`, which survives the
-  reset for every wrapper.
+  the `sudo` or `doas` wrapper (#3).
 - `RUST_BACKTRACE` is no longer propagated automatically. It's now subject
   to the same opt-in rules as any other variable — list it explicitly (e.g.
   `with_env(&["RUST_BACKTRACE"])`) if you want it preserved.
