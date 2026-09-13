@@ -75,8 +75,8 @@ impl Escalate {
         self
     }
 
-    /// Escalate privileges while maintaining RUST_BACKTRACE and selected
-    /// environment variables (or none).
+    /// Escalate privileges while maintaining selected environment variables
+    /// (or none).
     ///
     /// Activates SUID privileges when available.
     fn with_env(&self, prefixes: &[&str]) -> Result<RunningAs, Box<dyn Error>> {
@@ -93,7 +93,7 @@ impl Escalate {
     }
 
     /// Build the `Command` used to re-exec `args` under `self.wrapper`,
-    /// carrying along RUST_BACKTRACE and any env vars matching `patterns`.
+    /// carrying along any env vars matching `patterns`.
     ///
     /// Split out of `collect_envs` so the command can be inspected/spawned
     /// directly in tests without going through the process-exiting escalation
@@ -107,25 +107,6 @@ impl Escalate {
         let mut command: Command = Command::new(&self.wrapper);
 
         let mut relayed: Vec<(String, String)> = Vec::new();
-
-        // Always propagate RUST_BACKTRACE
-        if let Ok(trace) = std::env::var("RUST_BACKTRACE") {
-            let value = match &*trace.to_lowercase() {
-                "" => None,
-                "1" | "true" => Some("1"),
-                "full" => Some("full"),
-                invalid => {
-                    tracing::warn!(
-                        "RUST_BACKTRACE has invalid value {:?} -> defaulting to \"1\"",
-                        invalid
-                    );
-                    Some("1")
-                }
-            };
-            if let Some(value) = value {
-                relayed.push(("RUST_BACKTRACE".to_string(), value.to_string()));
-            }
-        }
 
         if !patterns.is_empty() {
             for (name, value) in std::env::vars() {
@@ -297,8 +278,8 @@ pub fn doas() -> Result<RunningAs, Box<dyn Error>> {
     builder().wrapper("doas").escalate_if_needed()
 }
 
-/// Escalate privileges while maintaining RUST_BACKTRACE and selected
-/// environment variables (or none).
+/// Escalate privileges while maintaining selected environment variables
+/// (or none).
 ///
 /// Activates SUID privileges when available.
 ///
@@ -318,8 +299,8 @@ pub fn with_env(prefixes: &[&str]) -> Result<RunningAs, Box<dyn Error>> {
     Escalate::default().with_env(prefixes)
 }
 
-/// Escalate privileges while maintaining RUST_BACKTRACE and selected
-/// environment variables that matches given wildcard (or none).
+/// Escalate privileges while maintaining selected environment variables
+/// that matches given wildcard (or none).
 ///
 /// To select all env variables, use `*`. Note that it may be insecure. Use it
 /// with care.
@@ -428,15 +409,13 @@ mod tests {
     }
 
     /// Negative path: with no patterns requested (the plain
-    /// `escalate_if_needed`/`sudo2::builder().escalate_if_needed()` case) and
-    /// no `RUST_BACKTRACE` set, `build_escalated_command` must not add the
-    /// `env` prefix or any `NAME=value` arguments at all — the wrapper
-    /// should just re-exec `args` as given, with no extra env plumbing.
+    /// `escalate_if_needed`/`sudo2::builder().escalate_if_needed()` case),
+    /// `build_escalated_command` must not add the `env` prefix or any
+    /// `NAME=value` arguments at all — the wrapper should just re-exec
+    /// `args` as given, with no extra env plumbing.
     #[test]
     #[traced_test]
     fn test_build_escalated_command_without_patterns_adds_no_extra_env() {
-        let prior_backtrace = std::env::var("RUST_BACKTRACE").ok();
-        std::env::remove_var("RUST_BACKTRACE");
         // Present in the environment, but must be ignored: nothing was asked
         // to be propagated.
         std::env::set_var("SUDO2_TEST_UNRELATED", "should-not-appear");
@@ -455,10 +434,6 @@ mod tests {
             0,
             "no env vars should be set on the command"
         );
-
-        if let Some(value) = prior_backtrace {
-            std::env::set_var("RUST_BACKTRACE", value);
-        }
     }
 
     #[test]
