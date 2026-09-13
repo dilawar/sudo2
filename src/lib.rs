@@ -29,20 +29,6 @@ pub enum RunningAs {
     Suid,
 }
 
-/// Check getuid() and geteuid() to learn about the configuration this program
-/// is running under
-fn check() -> RunningAs {
-    let uid = unsafe { libc::getuid() };
-    let euid = unsafe { libc::geteuid() };
-
-    match (uid, euid) {
-        (0, 0) => RunningAs::Root,
-        (_, 0) => RunningAs::Suid,
-        (_, _) => RunningAs::User,
-    }
-    //if uid == 0 { Root } else { User }
-}
-
 /// Returns `true` if binary is already running as root.
 pub fn running_as_root() -> bool {
     check() == RunningAs::Root
@@ -57,135 +43,7 @@ pub struct Escalate {
     wrapper: String,
 }
 
-impl Default for Escalate {
-    fn default() -> Self {
-        Escalate {
-            wrapper: "sudo".to_string(),
-        }
-    }
-}
-
 impl Escalate {
-    fn builder() -> Self {
-        Default::default()
-    }
-
-    fn wrapper(&mut self, wrapper: &str) -> &mut Self {
-        self.wrapper = wrapper.to_string();
-        self
-    }
-
-    /// Escalate privileges while maintaining selected environment variables
-    /// (or none).
-    ///
-    /// Activates SUID privileges when available.
-    fn with_env(&self, prefixes: &[&str]) -> Result<RunningAs, Box<dyn Error>> {
-        self.collect_envs(prefixes, false)
-    }
-
-    /// Escalate privileges while maintaininga selected environment variables
-    /// (or none) as wildcard. Use can use `*` to select all environment
-    /// variables (mimics `sudo -E`)
-    ///
-    /// Activates SUID privileges when available.
-    fn with_env_wildcards(&self, wildcards: &[&str]) -> Result<RunningAs, Box<dyn Error>> {
-        self.collect_envs(wildcards, true)
-    }
-
-    /// Build the `Command` used to re-exec `args` under `self.wrapper`,
-    /// carrying along any env vars matching `patterns`.
-    ///
-    /// Split out of `collect_envs` so the command can be inspected/spawned
-    /// directly in tests without going through the process-exiting escalation
-    /// path.
-    fn build_escalated_command(
-        &self,
-        args: &[String],
-        patterns: &[&str],
-        is_glob: bool,
-    ) -> Command {
-        let mut command: Command = Command::new(&self.wrapper);
-
-        let mut relayed: Vec<(String, String)> = Vec::new();
-
-        if !patterns.is_empty() {
-            for (name, value) in std::env::vars() {
-                // check if any patterns matches
-                if patterns.iter().any(|pattern| {
-                    if is_glob {
-                        wildmatch::WildMatch::new(pattern).matches(&name)
-                    } else {
-                        name.starts_with(pattern)
-                    }
-                }) {
-                    relayed.push((name, value));
-                }
-            }
-        }
-
-        if !relayed.is_empty() {
-            // `sudo`/`doas` exec the target with a *reset* environment by
-            // default (`env_reset` in sudoers): vars set on the wrapper
-            // process itself via `Command::env()` never reach the process it
-            // execs. Passing them as literal `NAME=value` arguments to `env`
-            // survives that reset, since they're argv, not inherited
-            // environment. This used to be done only for `pkexec` (whose
-            // policy-based exec has the same problem); see issue #3.
-            tracing::trace!(
-                "Prefixing `env` to {} command to pass additional environment variables!",
-                self.wrapper
-            );
-            command.arg("env");
-            for (name, value) in &relayed {
-                tracing::trace!("propagating {}={}", name, value);
-                command.arg(format!("{}={}", name, value));
-                command.env(name, value);
-            }
-        }
-
-        command.args(args);
-        command
-    }
-
-    fn collect_envs(&self, patterns: &[&str], is_glob: bool) -> Result<RunningAs, Box<dyn Error>> {
-        let current = check();
-        tracing::trace!("Running as {:?}", current);
-        match current {
-            RunningAs::Root => {
-                tracing::trace!("already running as Root");
-                return Ok(current);
-            }
-            RunningAs::Suid => {
-                tracing::trace!("setuid(0)");
-                unsafe {
-                    libc::setuid(0);
-                }
-                return Ok(current);
-            }
-            RunningAs::User => {
-                tracing::debug!("Escalating privileges");
-            }
-        }
-
-        let mut args: Vec<_> = std::env::args().collect();
-        if let Some(absolute_path) = std::env::current_exe()
-            .ok()
-            .and_then(|p| p.to_str().map(|p| p.to_string()))
-        {
-            args[0] = absolute_path;
-        }
-
-        let mut command = self.build_escalated_command(&args, patterns, is_glob);
-        let mut child = command.spawn().expect("failed to execute child");
-        let ecode = child.wait().expect("failed to wait on child");
-
-        if !ecode.success() {
-            std::process::exit(ecode.code().unwrap_or(1));
-        } else {
-            std::process::exit(0);
-        }
-    }
-
     /// Restart your program with root privileges if the user is not privileged
     /// enough.
     ///
@@ -320,6 +178,166 @@ pub fn with_env(prefixes: &[&str]) -> Result<RunningAs, Box<dyn Error>> {
 /// ```
 pub fn with_env_wildcards(wildcards: &[&str]) -> Result<RunningAs, Box<dyn Error>> {
     Escalate::default().with_env_wildcards(wildcards)
+}
+
+// ---------------------------------------------------------------------------
+// Private implementation
+// ---------------------------------------------------------------------------
+
+/// Check getuid() and geteuid() to learn about the configuration this program
+/// is running under
+fn check() -> RunningAs {
+    let uid = unsafe { libc::getuid() };
+    let euid = unsafe { libc::geteuid() };
+
+    match (uid, euid) {
+        (0, 0) => RunningAs::Root,
+        (_, 0) => RunningAs::Suid,
+        (_, _) => RunningAs::User,
+    }
+}
+
+impl Default for Escalate {
+    fn default() -> Self {
+        Escalate {
+            wrapper: "sudo".to_string(),
+        }
+    }
+}
+
+impl Escalate {
+    fn builder() -> Self {
+        Default::default()
+    }
+
+    fn wrapper(&mut self, wrapper: &str) -> &mut Self {
+        self.wrapper = wrapper.to_string();
+        self
+    }
+
+    /// Escalate privileges while maintaining selected environment variables
+    /// (or none).
+    ///
+    /// Activates SUID privileges when available.
+    fn with_env(&self, prefixes: &[&str]) -> Result<RunningAs, Box<dyn Error>> {
+        self.spawn_and_exit(prefixes, false)
+    }
+
+    /// Escalate privileges while maintaining selected environment variables
+    /// (or none) as wildcard. Use can use `*` to select all environment
+    /// variables (mimics `sudo -E`)
+    ///
+    /// Activates SUID privileges when available.
+    fn with_env_wildcards(&self, wildcards: &[&str]) -> Result<RunningAs, Box<dyn Error>> {
+        self.spawn_and_exit(wildcards, true)
+    }
+
+    /// Build the `Command` used to re-exec `args` under `self.wrapper`,
+    /// carrying along any env vars matching `patterns`.
+    ///
+    /// Split out of `spawn_and_exit` so the command can be inspected/spawned
+    /// directly in tests without going through the process-exiting escalation
+    /// path.
+    fn build_escalated_command(
+        &self,
+        args: &[String],
+        patterns: &[&str],
+        is_glob: bool,
+    ) -> Command {
+        let mut command: Command = Command::new(&self.wrapper);
+
+        let mut relayed: Vec<(String, String)> = Vec::new();
+
+        if !patterns.is_empty() {
+            for (name, value) in std::env::vars() {
+                // check if any pattern matches
+                if patterns.iter().any(|pattern| {
+                    if is_glob {
+                        wildmatch::WildMatch::new(pattern).matches(&name)
+                    } else {
+                        name.starts_with(pattern)
+                    }
+                }) {
+                    relayed.push((name, value));
+                }
+            }
+        }
+
+        if !relayed.is_empty() {
+            // `sudo`/`doas` exec the target with a *reset* environment by
+            // default (`env_reset` in sudoers): vars set on the wrapper
+            // process itself via `Command::env()` never reach the process it
+            // execs. Passing them as literal `NAME=value` arguments to `env`
+            // survives that reset, since they're argv, not inherited
+            // environment. This used to be done only for `pkexec` (whose
+            // policy-based exec has the same problem); see issue #3.
+            tracing::trace!(
+                "Prefixing `env` to {} command to pass additional environment variables!",
+                self.wrapper
+            );
+            // Only the `env`-argv form above is relied on; `Command::env()`
+            // would only affect `self.wrapper` itself, which every wrapper
+            // we support discards before reaching the target, so it's not
+            // set here.
+            command.arg("env");
+            for (name, value) in &relayed {
+                tracing::trace!("propagating {}={}", name, value);
+                command.arg(format!("{}={}", name, value));
+            }
+        }
+
+        command.args(args);
+        command
+    }
+
+    /// Escalate if needed, then spawn the wrapper, wait for it, and exit this
+    /// process with its exit code — this function never returns on the
+    /// escalation path (only the already-Root/Suid early returns do).
+    fn spawn_and_exit(
+        &self,
+        patterns: &[&str],
+        is_glob: bool,
+    ) -> Result<RunningAs, Box<dyn Error>> {
+        let current = check();
+        tracing::trace!("Running as {:?}", current);
+        match current {
+            RunningAs::Root => {
+                tracing::trace!("already running as Root");
+                return Ok(current);
+            }
+            RunningAs::Suid => {
+                tracing::trace!("setuid(0)");
+                unsafe {
+                    libc::setuid(0);
+                }
+                return Ok(current);
+            }
+            RunningAs::User => {
+                tracing::debug!("Escalating privileges");
+            }
+        }
+
+        let mut args: Vec<_> = std::env::args().collect();
+        // argv[0] may be relative (or just a bare name found via $PATH); the
+        // wrapper needs a path that still resolves once re-exec'd with a
+        // reset environment/cwd, so use the resolved absolute path instead.
+        if let Some(absolute_path) = std::env::current_exe()
+            .ok()
+            .and_then(|p| p.to_str().map(|p| p.to_string()))
+        {
+            args[0] = absolute_path;
+        }
+
+        let mut command = self.build_escalated_command(&args, patterns, is_glob);
+        let mut child = command.spawn().expect("failed to execute child");
+        let ecode = child.wait().expect("failed to wait on child");
+
+        if !ecode.success() {
+            std::process::exit(ecode.code().unwrap_or(1));
+        } else {
+            std::process::exit(0);
+        }
+    }
 }
 
 #[cfg(test)]
